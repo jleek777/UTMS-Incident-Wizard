@@ -371,6 +371,48 @@ const LEVEL4 = [
   ["threat","Terroristic Threat / False Public Alarm","Any communication intended to cause fear of violence, bombing, shooting, etc.", ["threatened to shoot","bomb threat","threatened violence","said they'd hurt everyone","shooting threat"]],
 ];
 function slugLevel(l){ return l===2?LEVEL2:l===3?LEVEL3:l===4?LEVEL4:LEVEL1; }
+const DEVICE_POLICY = {
+  intro: "As per Policy & Regulation 5516, aligned with New Jersey's statewide \u201cbell to bell\u201d school cell phone ban: students in grades 6\u20138 may not use an internet-enabled device or personal non-internet-enabled device on school grounds during the school day. Devices must be powered off and stored in the student's locker for the entire school day. Permitted exceptions: on the bus to/from school, on school grounds before/after the regular day, and during supervised school-sponsored events (on- or off-campus) with the Principal or designee's approval.",
+  terms: [
+    ["Bell to Bell", "The timeframe from the start-of-day bell until the end-of-day dismissal bell \u2014 including passing periods and lunch."],
+    ["Internet-enabled device", "Any device capable of connecting to the internet (smartphones, tablets, smartwatches, smart glasses, etc.), including social media apps. Does not include a Board-provided device used for educational purposes."],
+    ["Non-internet enabled device", "A basic communication device incapable of internet access (basic flip-style cell phones, two-way radios/walkie-talkies, etc.)."],
+  ],
+  occurrences: [
+    ["1st", "Device confiscated for the remainder of the day, turned in to the Principal/designee's office. Student picks it up at end of day. Meeting with Principal/designee to review the policy."],
+    ["2nd", "Device confiscated for the remainder of the day. Must be picked up by a parent \u2014 not the student \u2014 by end of day (or the next school day if the parent can't come). Parent signs for receipt."],
+    ["3rd", "Same as 2nd, and an In-School Suspension is assigned."],
+    ["4th", "Same as 2nd/3rd, and an Out-of-School Suspension is assigned."],
+    ["5th+", "A 5th violation in the same school year results in a full-year ban on bringing the device to school grounds, on the bus, or to any school-sponsored program (before/after-school programs, co-curricular, extracurricular, intramurals, interscholastic games/practices) for the remainder of the year, plus possible additional disciplinary action."],
+  ],
+};
+
+const BUS_CONDUCT = {
+  note: "Bus incidents are reported through the district's separate Bus Incident Report process \u2014 not through this Classroom Incident Log. Shown here for reference only.",
+  track1: [
+    ["Refusing to Obey Driver's Instructions", "Failing to follow a reasonable directive given by the bus driver."],
+    ["Excessive Noise/Rowdyism", "Loud, disruptive, or unruly behavior that interferes with the driver's ability to safely operate the bus."],
+    ["Failure to Remain Seated While Bus is in Motion", "Standing, moving around, or otherwise failing to stay seated while the bus is moving."],
+    ["Minor Roughhousing (Tripping/Pushing)", "Isolated, low-level physical horseplay that does not rise to the level of Fighting."],
+    ["Eating or Drinking on the Bus", "Consuming food or beverages where prohibited."],
+    ["Littering", "Leaving trash on the bus."],
+    ["Minor Bus Defacement", "Writing, drawing, or marking on bus seats or interior surfaces."],
+    ["Throwing or Shooting Objects", "Propelling any object on the bus without authorization."],
+    ["Placing Body Parts or Objects Through Open Windows", "Extending any part of the body or any object outside a bus window."],
+    ["Unauthorized Bus Change", "Boarding and riding a bus other than the student's officially assigned bus, without prior written authorization from a parent/guardian and school approval."],
+    ["Vulgar Language or Gestures", "Obscene, vulgar, or abusive language or gestures."],
+    ["Vulgar Language or Gestures (toward the driver)", "Same as above, directed at the bus driver \u2014 treated as a direct challenge to the one adult solely responsible for everyone's safety on a moving vehicle. Starts one tier ahead of the standard ladder."],
+  ],
+  track2: [
+    ["Fighting on the Bus", "Mutual physical violence between students while on the bus. Follows the same consequences as an in-school Fighting incident (Level 3 ISS/OSS ladder), possibly plus a Temporary or Longer Bus Suspension."],
+    ["Destructive Vandalism", "Cutting or dismantling seats, damaging seatbelts, breaking windows, etc. Immediate Bus Suspension plus restitution; may also trigger Destruction/Defacing of School Property (Level 3)."],
+    ["Leaving the Bus without Authorization", "Exiting the bus at any location other than the authorized stop, or without driver permission. Immediate Bus Suspension plus an immediate safety-confirmation/parent-notification protocol."],
+    ["Unauthorized Use of the Emergency Exit", "Opening or using the emergency exit without an actual emergency. Immediate Bus Suspension; damage to the exit also triggers Destruction/Defacing of School Property (Level 3)."],
+    ["Smoking or Lighting Combustible Materials", "Igniting or attempting to ignite any material on the bus. Immediate Bus Suspension; tobacco/nicotine also triggers Possession/Use of Tobacco (Level 3), other substances trigger Possession/Use of Drugs (Level 4)."],
+    ["Weapon, Firearm, or Hazardous Item on the Bus", "Possessing or using a weapon, firearm, or other hazardous/injurious item on the bus \u2014 same categories as the main Discipline Matrix. Immediate Bus Suspension, mandatory law enforcement notification, and Superintendent & BOE Disciplinary Actions up to and including Expulsion \u2014 N.J.S.A. 18A:37-2.2 explicitly covers school buses."],
+  ],
+};
+
 const ALL_INFRACTIONS = [
   ...LEVEL1.map(([key,label,def,kw])=>({key,label,level:1,def:def||'',keywords:kw||[]})),
   ...LEVEL2.map(([key,label,def,kw])=>({key,label,level:2,def,keywords:kw||[]})),
@@ -1655,6 +1697,90 @@ function renderReference(){
     });
     card().appendChild(grid);
   });
+
+  // Device Policy section (matches PDF order: right after Level 4)
+  const deviceHeading = document.createElement('div');
+  deviceHeading.className = 'level-header';
+  deviceHeading.style.color = 'var(--slate)';
+  deviceHeading.textContent = 'Device Policy \u2014 Regulation 5516';
+  card().appendChild(deviceHeading);
+
+  const deviceIntro = document.createElement('p');
+  deviceIntro.className = 'help';
+  deviceIntro.style.cssText = 'margin:0 0 12px;';
+  deviceIntro.textContent = DEVICE_POLICY.intro;
+  card().appendChild(deviceIntro);
+
+  const termsGrid = document.createElement('div');
+  termsGrid.className = 'options-grid';
+  DEVICE_POLICY.terms.forEach(([name, def])=>{
+    const box = document.createElement('div');
+    box.style.cssText = 'border:1.5px solid var(--slate); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; justify-content:center; background:var(--slate-soft);';
+    box.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${name}</div><small style="color:var(--ink-soft);">${def}</small>`;
+    termsGrid.appendChild(box);
+  });
+  card().appendChild(termsGrid);
+
+  const occHeading = document.createElement('p');
+  occHeading.className = 'help';
+  occHeading.style.cssText = 'margin:14px 0 8px; font-weight:600; color:var(--ink);';
+  occHeading.textContent = 'Consequence by occurrence (school year):';
+  card().appendChild(occHeading);
+
+  const occGrid = document.createElement('div');
+  occGrid.className = 'options-grid';
+  DEVICE_POLICY.occurrences.forEach(([occ, text])=>{
+    const box = document.createElement('div');
+    box.style.cssText = 'border:1.5px solid var(--line); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; justify-content:center; background:var(--neutral-fill);';
+    box.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${occ} Occurrence</div><small style="color:var(--ink-soft);">${text}</small>`;
+    occGrid.appendChild(box);
+  });
+  card().appendChild(occGrid);
+
+  // Bus Conduct section (matches PDF order: right after Device Policy)
+  const busHeading = document.createElement('div');
+  busHeading.className = 'level-header';
+  busHeading.style.color = 'var(--plum)';
+  busHeading.style.marginTop = '18px';
+  busHeading.textContent = 'Bus Conduct';
+  card().appendChild(busHeading);
+
+  const busBanner = document.createElement('div');
+  busBanner.style.cssText = 'background:var(--plum-soft); border:1.5px solid var(--plum); border-radius:10px; padding:12px 14px; margin-bottom:12px;';
+  busBanner.innerHTML = `<div><b>Not filed through this tool</b> \u2014 ${BUS_CONDUCT.note}</div>`;
+  card().appendChild(busBanner);
+
+  const track1Heading = document.createElement('p');
+  track1Heading.className = 'help';
+  track1Heading.style.cssText = 'margin:4px 0 8px; font-weight:600; color:var(--ink);';
+  track1Heading.textContent = 'Track 1 \u2014 Standard Progressive Ladder';
+  card().appendChild(track1Heading);
+
+  const track1Grid = document.createElement('div');
+  track1Grid.className = 'options-grid';
+  BUS_CONDUCT.track1.forEach(([name, def])=>{
+    const box = document.createElement('div');
+    box.style.cssText = 'border:1.5px solid var(--plum); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; justify-content:center; background:var(--plum-soft);';
+    box.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${name}</div><small style="color:var(--ink-soft);">${def}</small>`;
+    track1Grid.appendChild(box);
+  });
+  card().appendChild(track1Grid);
+
+  const track2Heading = document.createElement('p');
+  track2Heading.className = 'help';
+  track2Heading.style.cssText = 'margin:14px 0 8px; font-weight:600; color:var(--ink);';
+  track2Heading.textContent = 'Track 2 \u2014 Immediate Removal';
+  card().appendChild(track2Heading);
+
+  const track2Grid = document.createElement('div');
+  track2Grid.className = 'options-grid';
+  BUS_CONDUCT.track2.forEach(([name, def])=>{
+    const box = document.createElement('div');
+    box.style.cssText = 'border:1.5px solid var(--brick); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; justify-content:center; background:var(--brick-soft);';
+    box.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${name}</div><small style="color:var(--ink-soft);">${def}</small>`;
+    track2Grid.appendChild(box);
+  });
+  card().appendChild(track2Grid);
 }
 
 function renderInterventionsBrowse(){
